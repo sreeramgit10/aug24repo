@@ -1,0 +1,36 @@
+{
+	"name": "8am schedule",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "trigger-schedule",
+					"type": "PipelineReference"
+				}
+			},
+			{
+				"pipelineReference": {
+					"referenceName": "dynamic_dataset_trigger",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"inputdb": "DB-A",
+					"outputdb": "DB-B",
+					"inputtable": "tbl-X",
+					"outputtable": "tbl-Y"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Minute",
+				"interval": 15,
+				"startTime": "2024-08-26T03:46:00",
+				"timeZone": "India Standard Time"
+			}
+		}
+	}
+}

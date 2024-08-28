@@ -1,0 +1,24 @@
+{
+	"name": "event-trigger",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "event-pipeline",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "BlobEventsTrigger",
+		"typeProperties": {
+			"blobPathBeginsWith": "/dataset/blobs/input",
+			"ignoreEmptyBlobs": true,
+			"scope": "/subscriptions/3e491a07-edd4-451e-a565-bd00bf05d022/resourceGroups/sree/providers/Microsoft.Storage/storageAccounts/adlf",
+			"events": [
+				"Microsoft.Storage.BlobCreated"
+			]
+		}
+	}
+}

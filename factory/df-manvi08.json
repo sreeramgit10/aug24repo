@@ -1,0 +1,9 @@
+{
+	"name": "df-manvi08",
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "cdb0272d-6c68-4db9-8003-e2054bb03a79",
+		"tenantId": "f2174709-8137-4fe7-a6c6-5f86f3f339e9"
+	}
+}

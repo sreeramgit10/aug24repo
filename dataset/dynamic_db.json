@@ -1,0 +1,34 @@
+{
+	"name": "dynamic_db",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dynamic",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"DB_dynamic": {
+					"value": "@dataset().db_nmae",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"db_nmae": {
+				"type": "string"
+			},
+			"table_name": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": {
+				"value": "@dataset().table_name",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

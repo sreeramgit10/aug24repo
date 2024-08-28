@@ -1,0 +1,27 @@
+{
+	"name": "web-activity",
+	"properties": {
+		"activities": [
+			{
+				"name": "Web1",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": "https://reqres.in/api/users?page=2"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2024-08-27T04:51:17Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

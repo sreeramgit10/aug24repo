@@ -1,0 +1,27 @@
+{
+	"name": "azure91",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "sree _ ls",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "name",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "raj"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

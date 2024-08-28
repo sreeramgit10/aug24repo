@@ -1,0 +1,36 @@
+{
+	"name": "schedule-9am",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "trigger-schedule",
+					"type": "PipelineReference"
+				}
+			},
+			{
+				"pipelineReference": {
+					"referenceName": "dynamic_dataset_trigger",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"inputdb": "DB-A",
+					"outputdb": "DB-B",
+					"inputtable": "tbl-A",
+					"outputtable": "tbl-B"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Minute",
+				"interval": 1,
+				"startTime": "2024-08-26T03:44:00",
+				"timeZone": "India Standard Time"
+			}
+		}
+	}
+}
