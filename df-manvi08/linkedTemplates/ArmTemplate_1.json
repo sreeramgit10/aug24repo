@@ -1,0 +1,1623 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "df-manvi08"
+		},
+		"tumblingtrigger_properties_pipeline_parameters_WindowStartTime": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowStartTime"
+		},
+		"tumblingtrigger_properties_pipeline_parameters_WindowEndTime": {
+			"type": "string",
+			"defaultValue": "@trigger().outputs.windowEndTime"
+		},
+		"8am schedule_properties_dynamic_dataset_trigger_parameters_inputdb": {
+			"type": "string",
+			"defaultValue": "DB-A"
+		},
+		"8am schedule_properties_dynamic_dataset_trigger_parameters_outputdb": {
+			"type": "string",
+			"defaultValue": "DB-B"
+		},
+		"8am schedule_properties_dynamic_dataset_trigger_parameters_inputtable": {
+			"type": "string",
+			"defaultValue": "tbl-X"
+		},
+		"8am schedule_properties_dynamic_dataset_trigger_parameters_outputtable": {
+			"type": "string",
+			"defaultValue": "tbl-Y"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/azure sql')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "AzureSqlTable2",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "azure91",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-16T08:05:54Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/copy_tumbling_window')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderStoredProcedureName": "[[dbo].[TUMBLING_WINDOW_PROC]",
+								"storedProcedureParameters": {
+									"ENDDATE": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().parameters.WindowEndTime",
+											"type": "Expression"
+										}
+									},
+									"STARTDATE": {
+										"type": "String",
+										"value": {
+											"value": "@pipeline().parameters.WindowStartTime",
+											"type": "Expression"
+										}
+									}
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "dynamic_server91",
+								"type": "DatasetReference",
+								"parameters": {
+									"tablename": "CUST_SOURCE"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "dynamic_server91",
+								"type": "DatasetReference",
+								"parameters": {
+									"tablename": "Tumbling_Cust"
+								}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"WindowStartTime": {
+						"type": "string"
+					},
+					"WindowEndTime": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-26T04:29:39Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CUS1_CSV')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_KV_BLOB",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "Cus1.csv",
+						"folderPath": "input",
+						"container": "dataset"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "C.ID",
+						"type": "String"
+					},
+					{
+						"name": "FIRST_NAME",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/athleteevnts')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ravi",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "athlete_events.csv",
+						"container": "ravi"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "ID",
+						"type": "String"
+					},
+					{
+						"name": "Name",
+						"type": "String"
+					},
+					{
+						"name": "Sex",
+						"type": "String"
+					},
+					{
+						"name": "Age",
+						"type": "String"
+					},
+					{
+						"name": "Height",
+						"type": "String"
+					},
+					{
+						"name": "Weight",
+						"type": "String"
+					},
+					{
+						"name": "Team",
+						"type": "String"
+					},
+					{
+						"name": "NOC",
+						"type": "String"
+					},
+					{
+						"name": "Games",
+						"type": "String"
+					},
+					{
+						"name": "Year",
+						"type": "String"
+					},
+					{
+						"name": "Season",
+						"type": "String"
+					},
+					{
+						"name": "City",
+						"type": "String"
+					},
+					{
+						"name": "Sport",
+						"type": "String"
+					},
+					{
+						"name": "Event",
+						"type": "String"
+					},
+					{
+						"name": "Medal",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataset')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ravi",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "dataset"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "EMPLOYEE_ID",
+						"type": "String"
+					},
+					{
+						"name": "FIRST_NAME",
+						"type": "String"
+					},
+					{
+						"name": "LAST_NAME",
+						"type": "String"
+					},
+					{
+						"name": "SALARY",
+						"type": "String"
+					},
+					{
+						"name": "DEPARTMENT_ID",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataset_output_Folder')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_KV_BLOB",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "output",
+						"container": "dataset"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "C.ID",
+						"type": "String"
+					},
+					{
+						"name": "FIRST_NAME",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dynamic_db')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "dynamic",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DB_dynamic": {
+							"value": "@dataset().db_nmae",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"db_nmae": {
+						"type": "string"
+					},
+					"table_name": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": {
+						"value": "@dataset().table_name",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/file')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ravi",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "file"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/multiple')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ravi",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "mulpledataset"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "C.ID",
+						"type": "String"
+					},
+					{
+						"name": "FIRST_NAME",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/rankinput')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ravi",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "Rank_Input.csv",
+						"container": "ravi"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "emp_id",
+						"type": "String"
+					},
+					{
+						"name": "Emp_name",
+						"type": "String"
+					},
+					{
+						"name": "Salary",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/FOREACH')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Get Metadata1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get Metadata1').output.childItems",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Wait1",
+									"type": "Wait",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 1
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Get Metadata1",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "dataset",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"fieldList": [
+								"childItems"
+							],
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							},
+							"formatSettings": {
+								"type": "DelimitedTextReadSettings"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"input_arry": {
+						"type": "array"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-22T06:48:13Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/dataset')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/If codition')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Input_lookup",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT MAX(TrxnDate) as Input_Table_Date from DBO.IfTable_input",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "dynamic_db",
+								"type": "DatasetReference",
+								"parameters": {
+									"db_nmae": "reddtdb",
+									"table_name": "IfTable_input"
+								}
+							}
+						}
+					},
+					{
+						"name": "Output_Lookup",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT MAX(TrxnDate) as Output_Table_Date from DBO.IfTable_output",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "dynamic_db",
+								"type": "DatasetReference",
+								"parameters": {
+									"db_nmae": "reddtdb",
+									"table_name": "IfTable_Output"
+								}
+							}
+						}
+					},
+					{
+						"name": "If Condition1",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "Input_lookup",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "Output_Lookup",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@greater(activity('Input_lookup').output.firstRow.Input_Table_Date,activity('Output_Lookup').output.firstRow.Output_Table_Date )",
+								"type": "Expression"
+							},
+							"ifTrueActivities": [
+								{
+									"name": "Copy data1",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"sink": {
+											"type": "AzureSqlSink",
+											"writeBehavior": "insert",
+											"sqlWriterUseTableLock": false
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "dynamic_db",
+											"type": "DatasetReference",
+											"parameters": {
+												"db_nmae": "reddtdb",
+												"table_name": "IfTable_input"
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "dynamic_db",
+											"type": "DatasetReference",
+											"parameters": {
+												"db_nmae": "reddtdb",
+												"table_name": "IfTable_Output"
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-23T06:41:03Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/dynamic_db')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WEB_ACTIVITYFAILURE_test')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "CUS1_CSV",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "dataset_output_Folder",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "send_message",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Copy data1",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"method": "POST",
+							"headers": {},
+							"url": "https://prod-29.centralindia.logic.azure.com:443/workflows/abdb3ce15ed840488283143ea7d427ff/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=OmxAZ90ML2X1rPTHrAkHWGXYS0vj3wOjyKASO_N9Tek",
+							"body": {
+								"value": "{\n    \"PipelineName\": \"@{pipeline().Pipeline}\",\n    \"DataFactoryName\": \"@{pipeline().DataFactory}\",\n    \"ErrorMessage\": \"@{activity('Copy data1').output.errors}\"\n}",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-27T05:24:05Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/CUS1_CSV')]",
+				"[concat(variables('factoryId'), '/datasets/dataset_output_Folder')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dynamic')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Lookup1",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "dynamic_db",
+								"type": "DatasetReference",
+								"parameters": {
+									"db_nmae": "reddtdb",
+									"table_name": "daily_file_copy"
+								}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Lookup1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Lookup1').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Copy data1",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"sink": {
+											"type": "AzureSqlSink",
+											"writeBehavior": "insert",
+											"sqlWriterUseTableLock": false
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "dynamic_db",
+											"type": "DatasetReference",
+											"parameters": {
+												"db_nmae": {
+													"value": "@item().input_db",
+													"type": "Expression"
+												},
+												"table_name": {
+													"value": "@item().input_table_name",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "dynamic_db",
+											"type": "DatasetReference",
+											"parameters": {
+												"db_nmae": {
+													"value": "@item().output_db",
+													"type": "Expression"
+												},
+												"table_name": {
+													"value": "@item().output_table_name",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-22T06:48:13Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/dynamic_db')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dynamic_dataset_trigger')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "dynamic_db",
+								"type": "DatasetReference",
+								"parameters": {
+									"db_nmae": {
+										"value": "@pipeline().parameters.inputdb",
+										"type": "Expression"
+									},
+									"table_name": {
+										"value": "@pipeline().parameters.inputtable",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "dynamic_db",
+								"type": "DatasetReference",
+								"parameters": {
+									"db_nmae": {
+										"value": "@pipeline().parameters.outputdb",
+										"type": "Expression"
+									},
+									"table_name": {
+										"value": "@pipeline().parameters.outputtable",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"inputdb": {
+						"type": "string"
+					},
+					"outputdb": {
+						"type": "string"
+					},
+					"inputtable": {
+						"type": "string"
+					},
+					"outputtable": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-26T03:53:38Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/dynamic_db')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/file')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "athleteevnts",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "file",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-16T06:46:42Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/athleteevnts')]",
+				"[concat(variables('factoryId'), '/datasets/file')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "dynamic_db",
+								"type": "DatasetReference",
+								"parameters": {
+									"db_nmae": {
+										"value": "@pipeline().parameters.input_db_name",
+										"type": "Expression"
+									},
+									"table_name": {
+										"value": "@pipeline().parameters.input_table_name",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "dynamic_db",
+								"type": "DatasetReference",
+								"parameters": {
+									"db_nmae": {
+										"value": "@pipeline().parameters.output_db_name",
+										"type": "Expression"
+									},
+									"table_name": {
+										"value": "@pipeline().parameters.output_table_name",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"input_db_name": {
+						"type": "String"
+					},
+					"input_table_name": {
+						"type": "String"
+					},
+					"output_db_name": {
+						"type": "string"
+					},
+					"output_table_name": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-19T06:10:47Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/dynamic_db')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/switch')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Lookup1",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "select distinct country from ADDRESS_COMMON",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "dynamic_db",
+								"type": "DatasetReference",
+								"parameters": {
+									"db_nmae": "reddtdb",
+									"table_name": "ADDRESS_COMMON"
+								}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Lookup1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Lookup1').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Switch1",
+									"type": "Switch",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"on": {
+											"value": "@item().country",
+											"type": "Expression"
+										},
+										"cases": [
+											{
+												"value": "INDIA",
+												"activities": [
+													{
+														"name": "SWITCH _INDIA",
+														"type": "Copy",
+														"dependsOn": [],
+														"policy": {
+															"timeout": "0.12:00:00",
+															"retry": 0,
+															"retryIntervalInSeconds": 30,
+															"secureOutput": false,
+															"secureInput": false
+														},
+														"userProperties": [],
+														"typeProperties": {
+															"source": {
+																"type": "AzureSqlSource",
+																"sqlReaderQuery": "SELECT NAME,ADDRESS,CITY,COUNTRY FROM DBO.ADDRESS_COMMON\nWHERE COUNTRY ='INDIA'",
+																"queryTimeout": "02:00:00",
+																"partitionOption": "None"
+															},
+															"sink": {
+																"type": "AzureSqlSink",
+																"writeBehavior": "insert",
+																"sqlWriterUseTableLock": false
+															},
+															"enableStaging": false,
+															"translator": {
+																"type": "TabularTranslator",
+																"typeConversion": true,
+																"typeConversionSettings": {
+																	"allowDataTruncation": true,
+																	"treatBooleanAsNumber": false
+																}
+															}
+														},
+														"inputs": [
+															{
+																"referenceName": "dynamic_db",
+																"type": "DatasetReference",
+																"parameters": {
+																	"db_nmae": "reddtdb",
+																	"table_name": "ADDRESS_COMMON"
+																}
+															}
+														],
+														"outputs": [
+															{
+																"referenceName": "dynamic_db",
+																"type": "DatasetReference",
+																"parameters": {
+																	"db_nmae": "reddtdb",
+																	"table_name": "ADDRESS_INDIA"
+																}
+															}
+														]
+													}
+												]
+											},
+											{
+												"value": "USA",
+												"activities": [
+													{
+														"name": "SWITCH USA",
+														"type": "Copy",
+														"dependsOn": [],
+														"policy": {
+															"timeout": "0.12:00:00",
+															"retry": 0,
+															"retryIntervalInSeconds": 30,
+															"secureOutput": false,
+															"secureInput": false
+														},
+														"userProperties": [],
+														"typeProperties": {
+															"source": {
+																"type": "AzureSqlSource",
+																"sqlReaderQuery": "SELECT * FROM ADDRESS_COMMON\nWHERE COUNTRY = 'USA'",
+																"queryTimeout": "02:00:00",
+																"partitionOption": "None"
+															},
+															"sink": {
+																"type": "AzureSqlSink",
+																"writeBehavior": "insert",
+																"sqlWriterUseTableLock": false
+															},
+															"enableStaging": false,
+															"translator": {
+																"type": "TabularTranslator",
+																"typeConversion": true,
+																"typeConversionSettings": {
+																	"allowDataTruncation": true,
+																	"treatBooleanAsNumber": false
+																}
+															}
+														},
+														"inputs": [
+															{
+																"referenceName": "dynamic_db",
+																"type": "DatasetReference",
+																"parameters": {
+																	"db_nmae": "reddtdb",
+																	"table_name": "ADDRESS_COMMON"
+																}
+															}
+														],
+														"outputs": [
+															{
+																"referenceName": "dynamic_db",
+																"type": "DatasetReference",
+																"parameters": {
+																	"db_nmae": "reddtdb",
+																	"table_name": "ADDRESS_USA"
+																}
+															}
+														]
+													}
+												]
+											},
+											{
+												"value": "OTHERS",
+												"activities": [
+													{
+														"name": "Copy data1",
+														"type": "Copy",
+														"dependsOn": [],
+														"policy": {
+															"timeout": "0.12:00:00",
+															"retry": 0,
+															"retryIntervalInSeconds": 30,
+															"secureOutput": false,
+															"secureInput": false
+														},
+														"userProperties": [],
+														"typeProperties": {
+															"source": {
+																"type": "AzureSqlSource",
+																"sqlReaderQuery": "select * from ADDRESS_COMMON\nwhere country not in ('India','USA')",
+																"queryTimeout": "02:00:00",
+																"partitionOption": "None"
+															},
+															"sink": {
+																"type": "AzureSqlSink",
+																"writeBehavior": "insert",
+																"sqlWriterUseTableLock": false
+															},
+															"enableStaging": false,
+															"translator": {
+																"type": "TabularTranslator",
+																"typeConversion": true,
+																"typeConversionSettings": {
+																	"allowDataTruncation": true,
+																	"treatBooleanAsNumber": false
+																}
+															}
+														},
+														"inputs": [
+															{
+																"referenceName": "dynamic_db",
+																"type": "DatasetReference",
+																"parameters": {
+																	"db_nmae": "reddtdb",
+																	"table_name": "ADDRESS_COMMON"
+																}
+															}
+														],
+														"outputs": [
+															{
+																"referenceName": "dynamic_db",
+																"type": "DatasetReference",
+																"parameters": {
+																	"db_nmae": "reddtdb",
+																	"table_name": "ADDRESS_OTHERS"
+																}
+															}
+														]
+													}
+												]
+											}
+										]
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-23T08:07:07Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/dynamic_db')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tumblingtrigger')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipeline": {
+					"pipelineReference": {
+						"referenceName": "copy_tumbling_window",
+						"type": "PipelineReference"
+					},
+					"parameters": {
+						"WindowStartTime": "[parameters('tumblingtrigger_properties_pipeline_parameters_WindowStartTime')]",
+						"WindowEndTime": "[parameters('tumblingtrigger_properties_pipeline_parameters_WindowEndTime')]"
+					}
+				},
+				"type": "TumblingWindowTrigger",
+				"typeProperties": {
+					"frequency": "Hour",
+					"interval": 24,
+					"startTime": "2024-08-19T04:28:00Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 50,
+					"retryPolicy": {
+						"intervalInSeconds": 30
+					},
+					"dependsOn": []
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/copy_tumbling_window')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/8am schedule')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "trigger-schedule",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					},
+					{
+						"pipelineReference": {
+							"referenceName": "dynamic_dataset_trigger",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"inputdb": "[parameters('8am schedule_properties_dynamic_dataset_trigger_parameters_inputdb')]",
+							"outputdb": "[parameters('8am schedule_properties_dynamic_dataset_trigger_parameters_outputdb')]",
+							"inputtable": "[parameters('8am schedule_properties_dynamic_dataset_trigger_parameters_inputtable')]",
+							"outputtable": "[parameters('8am schedule_properties_dynamic_dataset_trigger_parameters_outputtable')]"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Minute",
+						"interval": 15,
+						"startTime": "2024-08-26T03:46:00",
+						"timeZone": "India Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/dynamic_dataset_trigger')]"
+			]
+		}
+	]
+}

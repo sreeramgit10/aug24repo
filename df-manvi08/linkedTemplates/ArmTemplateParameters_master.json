@@ -1,0 +1,105 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "df-manvi08"
+		},
+		"LS_KV_BLOB_connectionString": {
+			"value": "DefaultEndpointsProtocol=https;AccountName=adlf;"
+		},
+		"ade_connectionString": {
+			"value": ""
+		},
+		"azuresql0791_password": {
+			"value": ""
+		},
+		"dynamic_password": {
+			"value": ""
+		},
+		"ravi_connectionString": {
+			"value": ""
+		},
+		"sree _ ls_password": {
+			"value": ""
+		},
+		"LS_KV_properties_typeProperties_baseUrl": {
+			"value": "https://kv-adeaug24.vault.azure.net/"
+		},
+		"LS_KV_SQL_properties_typeProperties_server": {
+			"value": "server0791.database.windows.net"
+		},
+		"LS_KV_SQL_properties_typeProperties_database": {
+			"value": "server91"
+		},
+		"LS_KV_SQL_properties_typeProperties_userName": {
+			"value": "sreddy91"
+		},
+		"azuresql0791_properties_typeProperties_server": {
+			"value": "server0791.database.windows.net"
+		},
+		"azuresql0791_properties_typeProperties_database": {
+			"value": "server91"
+		},
+		"azuresql0791_properties_typeProperties_userName": {
+			"value": "sreddy91"
+		},
+		"dynamic_properties_typeProperties_server": {
+			"value": "serversreeram.database.windows.net"
+		},
+		"dynamic_properties_typeProperties_database": {
+			"value": "@{linkedService().DB_dynamic}"
+		},
+		"dynamic_properties_typeProperties_userName": {
+			"value": "sreddy08"
+		},
+		"sree _ ls_properties_typeProperties_server": {
+			"value": "serversreeram.database.windows.net"
+		},
+		"sree _ ls_properties_typeProperties_database": {
+			"value": "reddy"
+		},
+		"sree _ ls_properties_typeProperties_userName": {
+			"value": "sreddy08"
+		},
+		"8am schedule_properties_dynamic_dataset_trigger_parameters_inputdb": {
+			"value": "DB-A"
+		},
+		"8am schedule_properties_dynamic_dataset_trigger_parameters_outputdb": {
+			"value": "DB-B"
+		},
+		"8am schedule_properties_dynamic_dataset_trigger_parameters_inputtable": {
+			"value": "tbl-X"
+		},
+		"8am schedule_properties_dynamic_dataset_trigger_parameters_outputtable": {
+			"value": "tbl-Y"
+		},
+		"event-trigger_properties_typeProperties_scope": {
+			"value": "/subscriptions/3e491a07-edd4-451e-a565-bd00bf05d022/resourceGroups/sree/providers/Microsoft.Storage/storageAccounts/adlf"
+		},
+		"schedule-9am_properties_dynamic_dataset_trigger_parameters_inputdb": {
+			"value": "DB-A"
+		},
+		"schedule-9am_properties_dynamic_dataset_trigger_parameters_outputdb": {
+			"value": "DB-B"
+		},
+		"schedule-9am_properties_dynamic_dataset_trigger_parameters_inputtable": {
+			"value": "tbl-A"
+		},
+		"schedule-9am_properties_dynamic_dataset_trigger_parameters_outputtable": {
+			"value": "tbl-B"
+		},
+		"tumblingtrigger_properties_pipeline_parameters_WindowStartTime": {
+			"value": "@trigger().outputs.windowStartTime"
+		},
+		"tumblingtrigger_properties_pipeline_parameters_WindowEndTime": {
+			"value": "@trigger().outputs.windowEndTime"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
